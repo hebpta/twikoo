@@ -1,0 +1,43 @@
+name: Update and Sync Repositories
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  update_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get latest release
+        id: get-latest-release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: twikoojs/twikoo
+          excludes: prerelease, draft
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Update package.json with latest release version
+        run: |
+          latest_release="${{ steps.get-latest-release.outputs.release }}"
+          jq --arg ver "$latest_release" '.dependencies["twikoo-vercel"] = $ver' package.json > package.tmp.json && mv package.tmp.json package.json
+
+      - name: Commit and push changes if necessary
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add package.json
+          git diff-index --quiet HEAD || git commit -m "v${{ steps.get-latest-release.outputs.release }}"
+          git push
