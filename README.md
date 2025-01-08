@@ -1,3 +1,6 @@
+<details>
+  <summary>get-latest-release</summary>
+
 ```
 jobs:
   update_release:
@@ -36,7 +39,6 @@ jobs:
           git diff-index --quiet HEAD || git commit -m "v${{ steps.get-latest-release.outputs.release }}"
           git push
 ```
-
 ```
 jobs:
   update_master:
@@ -73,7 +75,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: master
 ```
-
 ```
 jobs:
   update-version:
@@ -105,6 +106,9 @@ jobs:
         git diff-index --quiet HEAD || git commit -m "v${{ env.version }}"
         git push
 ```
+</details>
+<details>
+  <summary>Update Release Tags for Multiple Repos</summary>
 
 ```
 name: Update Release Tags for Multiple Repos
@@ -222,3 +226,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}
         working-directory: target-repo-chatgpt-next-web
 ```
+</details>
