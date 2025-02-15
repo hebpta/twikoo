@@ -1,14 +1,11 @@
 name: Update and Sync Repositories
-
 on:
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
-
 jobs:
   update_release:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -26,9 +23,6 @@ jobs:
           excludes: prerelease, draft
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
       - name: Update package.json with latest release version
         run: |
           latest_release="${{ steps.get-latest-release.outputs.release }}"
@@ -39,5 +33,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add package.json
-          git diff-index --quiet HEAD || git commit -m "v${{ steps.get-latest-release.outputs.release }}"
-          git push
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "v${{ steps.get-latest-release.outputs.release }}"
+            git push
+          fi
